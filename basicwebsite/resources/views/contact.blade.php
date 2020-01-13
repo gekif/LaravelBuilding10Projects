@@ -40,3 +40,8 @@
         {!! Form::close() !!}
 
 @stop
+
+@section('sidebar')
+    @parent
+    <p>This is the appended to the sidebar</p>
+@endsection
