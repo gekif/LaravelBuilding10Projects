@@ -12,6 +12,7 @@
             'action' => ['TodosController@update', $todo->id]
         ]) !!}
 
+
     {{ Form::bsText('text', $todo->text) }}
 
     {{ Form::bsTextArea('body', $todo->body) }}
