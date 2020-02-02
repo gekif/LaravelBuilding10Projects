@@ -24,7 +24,7 @@
                             @foreach ($listings as $listing)
                                 <tr>
                                     <td>{{ $listing->name }}</td>
-                                    <td></td>
+                                    <td><a class=" pull-right btn btn-default" href="/listings/{{ $listing->id }}/edit">Edit</a></td>
                                     <td></td>
                                 </tr>
                             @endforeach
