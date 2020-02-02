@@ -8,14 +8,31 @@ use Illuminate\Http\Request;
 class ListingsController extends Controller
 {
     /**
+     * Create a new controller instance.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        $this->middleware('auth', [
+            'except' => ['index', 'show']
+        ]);
+    }
+
+
+    /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
     public function index()
     {
-        //
+        $listings = Listing::orderBy('created_at', 'desc')->get();
+
+        return view('listings')->with('listings', $listings);
+
     }
+
 
     /**
      * Show the form for creating a new resource.
@@ -26,6 +43,7 @@ class ListingsController extends Controller
     {
         return view('createlisting');
     }
+
 
     /**
      * Store a newly created resource in storage.
@@ -65,7 +83,10 @@ class ListingsController extends Controller
      */
     public function show($id)
     {
-        //
+        $listing = Listing::findOrFail($id);
+
+        return view('showlisting')->with('listing', $listing);
+
     }
 
     /**
@@ -80,6 +101,7 @@ class ListingsController extends Controller
 
         return view('editlisting')->with('listing', $listing);
     }
+
 
     /**
      * Update the specified resource in storage.
@@ -111,6 +133,7 @@ class ListingsController extends Controller
         return redirect('/dashboard')->with('success', 'Listing Updated');
 
     }
+
 
     /**
      * Remove the specified resource from storage.

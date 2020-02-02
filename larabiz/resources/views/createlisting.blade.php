@@ -37,7 +37,7 @@
                         'placeholder' => 'About This Business'
                     ])}}
 
-                    {{Form::bsSubmit('submit')}}
+                    {{Form::bsSubmit('Submit')}}
 
                 {!! Form::close() !!}
 
