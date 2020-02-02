@@ -9,9 +9,8 @@
             <div class="panel-body">
               <ul class="list-group">
                 <li class="list-group-item">Address: {{$listing->address}}</li>
-                <li class="list-group-item">Website: <a href="{{$listing->website}}" target="_blank">{{$listing->website}}</a></li>
-                {{--<li class="list-group-item">Website: <a href="{{ url($listing->website) }}" target="_blank">{{$listing->website}}</a></li>--}}
-                <li class="list-group-item">Email: {{$listing->email}}</li>
+                  <li class="list-group-item">Website: <a href="http://{{$listing->website}}" target="_blank">{{$listing->website}}</a></li>
+                  <li class="list-group-item">Email: {{$listing->email}}</li>
                 <li class="list-group-item">Phone: {{$listing->phone}}</li>
               </ul>
               <hr>
