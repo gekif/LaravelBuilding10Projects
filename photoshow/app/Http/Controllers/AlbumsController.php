@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Album;
 use Illuminate\Http\Request;
 
 class AlbumsController extends Controller
 {
     public function index()
     {
-        return view('albums.index');
+        $albums = Album::all();
+
+        return view('albums.index')->with('albums', $albums);
     }
 
 
@@ -46,7 +49,16 @@ class AlbumsController extends Controller
         $path = $uploadedFile
             ->storeAs('public/album_covers', $fileNameToStore);
 
-        return $path;
+        // Create Album
+        $album = new Album();
+
+        $album->name = $request->input('name');
+        $album->description = $request->input('description');
+        $album->cover_image = $fileNameToStore;
+
+        $album->save();
+
+        return redirect('/albums')->with('success', 'Album Created');
     }
 
 }
