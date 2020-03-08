@@ -9,4 +9,46 @@
 
     <hr>
 
+    @if (count($album->photos) > 0)
+        @php
+            $colCount = count($album->photos);
+            $i = 1;
+        @endphp
+
+        <div id="photos">
+            <div class="row text-center">
+                @foreach ($album->photos as $photo)
+                    @if ($i == $colCount)
+                        <div class='medium-4 columns end'>
+                            <a href="/photos/{{ $photo->id }}">
+                                <img class="thumbnail" src="/storage/photos/{{ $photo->album_id }}/{{ $photo->photo }}" alt="{{ $photo->title }}">
+                            </a>
+                            <br>
+                            <h4>{{ $photo->title }}</h4>
+
+                            @else
+                                <div class='medium-4 columns'>
+                                    <a href="/photos/{{ $photo->id }}">
+                                        <img class="thumbnail" src="/storage/photos/{{ $photo->album_id }}/{{ $photo->photo }}" alt="{{ $photo->title }}">
+                                    </a>
+                                    <br>
+                                    <h4>{{ $photo->title }}</h4>
+                                    @endif
+                                    @if ($i % 3 == 0)
+                                </div></div><div class="row text-center">
+
+                            @else
+                        </div>
+                    @endif
+
+                    @php $i++ @endphp
+
+                @endforeach
+            </div>
+        </div>
+
+    @else
+        <p>No Photos To Display</p>
+    @endif
+
 @stop
