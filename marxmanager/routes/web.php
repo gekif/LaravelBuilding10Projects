@@ -23,3 +23,5 @@ Route::post('store', [
     'as' => 'bookmarks.store',
     'uses' => 'BookmarksController@store'
 ]);
+
+Route::delete('/bookmarks/{id}', 'BookmarksController@destroy');

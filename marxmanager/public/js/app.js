@@ -71,7 +71,6 @@
 
 
 var bind = __webpack_require__(3);
-var isBuffer = __webpack_require__(18);
 
 /*global toString:true*/
 
@@ -246,15 +245,13 @@ function trim(str) {
  *  typeof document -> undefined
  *
  * react-native:
- *  navigator.product -> 'ReactNative'
+ *  typeof document.createElement -> undefined
  */
 function isStandardBrowserEnv() {
-  if (typeof navigator !== 'undefined' && navigator.product === 'ReactNative') {
-    return false;
-  }
   return (
     typeof window !== 'undefined' &&
-    typeof document !== 'undefined'
+    typeof document !== 'undefined' &&
+    typeof document.createElement === 'function'
   );
 }
 
@@ -352,7 +349,6 @@ function extend(a, b, thisArg) {
 module.exports = {
   isArray: isArray,
   isArrayBuffer: isArrayBuffer,
-  isBuffer: isBuffer,
   isFormData: isFormData,
   isArrayBufferView: isArrayBufferView,
   isString: isString,
@@ -408,8 +404,9 @@ module.exports = g;
 /* WEBPACK VAR INJECTION */(function(process) {
 
 var utils = __webpack_require__(0);
-var normalizeHeaderName = __webpack_require__(20);
+var normalizeHeaderName = __webpack_require__(19);
 
+var PROTECTION_PREFIX = /^\)\]\}',?\n/;
 var DEFAULT_CONTENT_TYPE = {
   'Content-Type': 'application/x-www-form-urlencoded'
 };
@@ -439,7 +436,6 @@ var defaults = {
     normalizeHeaderName(headers, 'Content-Type');
     if (utils.isFormData(data) ||
       utils.isArrayBuffer(data) ||
-      utils.isBuffer(data) ||
       utils.isStream(data) ||
       utils.isFile(data) ||
       utils.isBlob(data)
@@ -463,6 +459,7 @@ var defaults = {
   transformResponse: [function transformResponse(data) {
     /*eslint no-param-reassign:0*/
     if (typeof data === 'string') {
+      data = data.replace(PROTECTION_PREFIX, '');
       try {
         data = JSON.parse(data);
       } catch (e) { /* Ignore */ }
@@ -488,7 +485,7 @@ defaults.headers = {
   }
 };
 
-utils.forEach(['delete', 'get', 'head'], function forEachMethodNoData(method) {
+utils.forEach(['delete', 'get', 'head'], function forEachMehtodNoData(method) {
   defaults.headers[method] = {};
 });
 
@@ -716,12 +713,12 @@ process.umask = function() { return 0; };
 
 
 var utils = __webpack_require__(0);
-var settle = __webpack_require__(21);
-var buildURL = __webpack_require__(23);
-var parseHeaders = __webpack_require__(24);
-var isURLSameOrigin = __webpack_require__(25);
+var settle = __webpack_require__(20);
+var buildURL = __webpack_require__(22);
+var parseHeaders = __webpack_require__(23);
+var isURLSameOrigin = __webpack_require__(24);
 var createError = __webpack_require__(6);
-var btoa = (typeof window !== 'undefined' && window.btoa && window.btoa.bind(window)) || __webpack_require__(26);
+var btoa = (typeof window !== 'undefined' && window.btoa && window.btoa.bind(window)) || __webpack_require__(25);
 
 module.exports = function xhrAdapter(config) {
   return new Promise(function dispatchXhrRequest(resolve, reject) {
@@ -799,7 +796,7 @@ module.exports = function xhrAdapter(config) {
     request.onerror = function handleError() {
       // Real errors are hidden from us by the browser
       // onerror should only fire if it's a network error
-      reject(createError('Network Error', config, null, request));
+      reject(createError('Network Error', config));
 
       // Clean up request
       request = null;
@@ -807,8 +804,7 @@ module.exports = function xhrAdapter(config) {
 
     // Handle timeout
     request.ontimeout = function handleTimeout() {
-      reject(createError('timeout of ' + config.timeout + 'ms exceeded', config, 'ECONNABORTED',
-        request));
+      reject(createError('timeout of ' + config.timeout + 'ms exceeded', config, 'ECONNABORTED'));
 
       // Clean up request
       request = null;
@@ -818,7 +814,7 @@ module.exports = function xhrAdapter(config) {
     // This is only done if running in a standard browser environment.
     // Specifically not if we're in a web worker, or react-native.
     if (utils.isStandardBrowserEnv()) {
-      var cookies = __webpack_require__(27);
+      var cookies = __webpack_require__(26);
 
       // Add xsrf header
       var xsrfValue = (config.withCredentials || isURLSameOrigin(config.url)) && config.xsrfCookieName ?
@@ -853,9 +849,7 @@ module.exports = function xhrAdapter(config) {
       try {
         request.responseType = config.responseType;
       } catch (e) {
-        // Expected DOMException thrown by browsers not compatible XMLHttpRequest Level 2.
-        // But, this can be suppressed for 'json' type as it can be parsed by default 'transformResponse' function.
-        if (config.responseType !== 'json') {
+        if (request.responseType !== 'json') {
           throw e;
         }
       }
@@ -902,21 +896,20 @@ module.exports = function xhrAdapter(config) {
 "use strict";
 
 
-var enhanceError = __webpack_require__(22);
+var enhanceError = __webpack_require__(21);
 
 /**
- * Create an Error with the specified message, config, error code, request and response.
+ * Create an Error with the specified message, config, error code, and response.
  *
  * @param {string} message The error message.
  * @param {Object} config The config.
  * @param {string} [code] The error code (for example, 'ECONNABORTED').
- * @param {Object} [request] The request.
- * @param {Object} [response] The response.
+ @ @param {Object} [response] The response.
  * @returns {Error} The created error.
  */
-module.exports = function createError(message, config, code, request, response) {
+module.exports = function createError(message, config, code, response) {
   var error = new Error(message);
-  return enhanceError(error, config, code, request, response);
+  return enhanceError(error, config, code, response);
 };
 
 
@@ -978,6 +971,7 @@ module.exports = __webpack_require__(43);
  */
 
 __webpack_require__(11);
+__webpack_require__(34);
 
 window.Vue = __webpack_require__(35);
 
@@ -31405,7 +31399,7 @@ module.exports = __webpack_require__(17);
 
 var utils = __webpack_require__(0);
 var bind = __webpack_require__(3);
-var Axios = __webpack_require__(19);
+var Axios = __webpack_require__(18);
 var defaults = __webpack_require__(2);
 
 /**
@@ -31440,14 +31434,14 @@ axios.create = function create(instanceConfig) {
 
 // Expose Cancel & CancelToken
 axios.Cancel = __webpack_require__(8);
-axios.CancelToken = __webpack_require__(33);
+axios.CancelToken = __webpack_require__(32);
 axios.isCancel = __webpack_require__(7);
 
 // Expose all/spread
 axios.all = function all(promises) {
   return Promise.all(promises);
 };
-axios.spread = __webpack_require__(34);
+axios.spread = __webpack_require__(33);
 
 module.exports = axios;
 
@@ -31457,33 +31451,6 @@ module.exports.default = axios;
 
 /***/ }),
 /* 18 */
-/***/ (function(module, exports) {
-
-/*!
- * Determine if an object is a Buffer
- *
- * @author   Feross Aboukhadijeh <https://feross.org>
- * @license  MIT
- */
-
-// The _isBuffer check is for Safari 5-7 support, because it's missing
-// Object.prototype.constructor. Remove this eventually
-module.exports = function (obj) {
-  return obj != null && (isBuffer(obj) || isSlowBuffer(obj) || !!obj._isBuffer)
-}
-
-function isBuffer (obj) {
-  return !!obj.constructor && typeof obj.constructor.isBuffer === 'function' && obj.constructor.isBuffer(obj)
-}
-
-// For Node v0.10 support. Remove this eventually.
-function isSlowBuffer (obj) {
-  return typeof obj.readFloatLE === 'function' && typeof obj.slice === 'function' && isBuffer(obj.slice(0, 0))
-}
-
-
-/***/ }),
-/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -31491,10 +31458,10 @@ function isSlowBuffer (obj) {
 
 var defaults = __webpack_require__(2);
 var utils = __webpack_require__(0);
-var InterceptorManager = __webpack_require__(28);
-var dispatchRequest = __webpack_require__(29);
-var isAbsoluteURL = __webpack_require__(31);
-var combineURLs = __webpack_require__(32);
+var InterceptorManager = __webpack_require__(27);
+var dispatchRequest = __webpack_require__(28);
+var isAbsoluteURL = __webpack_require__(30);
+var combineURLs = __webpack_require__(31);
 
 /**
  * Create a new instance of Axios
@@ -31524,7 +31491,6 @@ Axios.prototype.request = function request(config) {
   }
 
   config = utils.merge(defaults, this.defaults, { method: 'get' }, config);
-  config.method = config.method.toLowerCase();
 
   // Support baseURL config
   if (config.baseURL && !isAbsoluteURL(config.url)) {
@@ -31551,7 +31517,7 @@ Axios.prototype.request = function request(config) {
 };
 
 // Provide aliases for supported request methods
-utils.forEach(['delete', 'get', 'head', 'options'], function forEachMethodNoData(method) {
+utils.forEach(['delete', 'get', 'head'], function forEachMethodNoData(method) {
   /*eslint func-names:0*/
   Axios.prototype[method] = function(url, config) {
     return this.request(utils.merge(config || {}, {
@@ -31576,7 +31542,7 @@ module.exports = Axios;
 
 
 /***/ }),
-/* 20 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -31595,7 +31561,7 @@ module.exports = function normalizeHeaderName(headers, normalizedName) {
 
 
 /***/ }),
-/* 21 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -31620,7 +31586,6 @@ module.exports = function settle(resolve, reject, response) {
       'Request failed with status code ' + response.status,
       response.config,
       null,
-      response.request,
       response
     ));
   }
@@ -31628,7 +31593,7 @@ module.exports = function settle(resolve, reject, response) {
 
 
 /***/ }),
-/* 22 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -31640,23 +31605,21 @@ module.exports = function settle(resolve, reject, response) {
  * @param {Error} error The error to update.
  * @param {Object} config The config.
  * @param {string} [code] The error code (for example, 'ECONNABORTED').
- * @param {Object} [request] The request.
- * @param {Object} [response] The response.
+ @ @param {Object} [response] The response.
  * @returns {Error} The error.
  */
-module.exports = function enhanceError(error, config, code, request, response) {
+module.exports = function enhanceError(error, config, code, response) {
   error.config = config;
   if (code) {
     error.code = code;
   }
-  error.request = request;
   error.response = response;
   return error;
 };
 
 
 /***/ }),
-/* 23 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -31731,7 +31694,7 @@ module.exports = function buildURL(url, params, paramsSerializer) {
 
 
 /***/ }),
-/* 24 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -31775,7 +31738,7 @@ module.exports = function parseHeaders(headers) {
 
 
 /***/ }),
-/* 25 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -31850,7 +31813,7 @@ module.exports = (
 
 
 /***/ }),
-/* 26 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -31893,7 +31856,7 @@ module.exports = btoa;
 
 
 /***/ }),
-/* 27 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -31953,7 +31916,7 @@ module.exports = (
 
 
 /***/ }),
-/* 28 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -32012,14 +31975,14 @@ module.exports = InterceptorManager;
 
 
 /***/ }),
-/* 29 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 var utils = __webpack_require__(0);
-var transformData = __webpack_require__(30);
+var transformData = __webpack_require__(29);
 var isCancel = __webpack_require__(7);
 var defaults = __webpack_require__(2);
 
@@ -32098,7 +32061,7 @@ module.exports = function dispatchRequest(config) {
 
 
 /***/ }),
-/* 30 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -32125,7 +32088,7 @@ module.exports = function transformData(data, headers, fns) {
 
 
 /***/ }),
-/* 31 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -32146,7 +32109,7 @@ module.exports = function isAbsoluteURL(url) {
 
 
 /***/ }),
-/* 32 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -32160,14 +32123,12 @@ module.exports = function isAbsoluteURL(url) {
  * @returns {string} The combined URL
  */
 module.exports = function combineURLs(baseURL, relativeURL) {
-  return relativeURL
-    ? baseURL.replace(/\/+$/, '') + '/' + relativeURL.replace(/^\/+/, '')
-    : baseURL;
+  return baseURL.replace(/\/+$/, '') + '/' + relativeURL.replace(/^\/+/, '');
 };
 
 
 /***/ }),
-/* 33 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -32231,7 +32192,7 @@ module.exports = CancelToken;
 
 
 /***/ }),
-/* 34 */
+/* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -32263,6 +32224,22 @@ module.exports = function spread(callback) {
   };
 };
 
+
+/***/ }),
+/* 34 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var axios = __webpack_require__(16);
+
+$('body').on('click', '.delete-bookmark', function () {
+    var id = $(this).data('id');
+
+    axios.delete('/bookmarks/' + id).then(function () {
+        window.location.reload();
+    }).catch(function (error) {
+        console.log(error);
+    });
+});
 
 /***/ }),
 /* 35 */
